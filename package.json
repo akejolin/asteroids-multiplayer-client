@@ -1,0 +1,37 @@
+{
+  "name": "asteroids-multiplayer-client",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:akejolin/asteroids-multiplayer-client.git",
+  "author": "akejolin <akejolin@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "static": "next build && next export",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.6.2",
+    "next": "12.0.4",
+    "next-redux-wrapper": "^7.0.5",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-redux": "^7.2.6",
+    "redux": "^4.1.2",
+    "redux-actions": "^2.6.5",
+    "redux-devtools-extension": "^2.13.9",
+    "redux-thunk": "^2.4.1",
+    "webrtc": "^1.14.1"
+  },
+  "devDependencies": {
+    "@types/next-redux-wrapper": "^3.0.0",
+    "@types/node": "16.11.11",
+    "@types/react": "17.0.37",
+    "@types/react-redux": "^7.1.20",
+    "eslint": "7",
+    "eslint-config-next": "12.0.4",
+    "typescript": "4.5.2"
+  }
+}
