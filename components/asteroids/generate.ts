@@ -51,7 +51,7 @@ export const generateAsteroids = (that:any, amount:number) => {
   }
 
 
-  export const createShip = (that:any) => {
+  export const createShip = (that:any, player:any) => {
     let ship = new Ship({
       position: {
         x: that.state.screen.width/2,
@@ -59,6 +59,7 @@ export const generateAsteroids = (that:any, amount:number) => {
       },
       //lastShotLimit: 0.1,
       create: that.createObject,
+      player,
       onDie: () => {},
       onSound: that.onSound.bind(that),
       updateUpgradeFuel: (data:any) => {
@@ -67,7 +68,6 @@ export const generateAsteroids = (that:any, amount:number) => {
     });
     that.createObject(ship, 'ships')
   }
-
 
   export const createUfo = (that:any) => {
 

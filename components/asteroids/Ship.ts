@@ -20,6 +20,7 @@ export interface Iprops {
   currentWeapond?: string,
   lastShotLimit?: number,
   updateUpgradeFuel: Function,
+  player: any,
 }
 
 interface IcurrentWeapon extends IshipWeapon {
@@ -51,6 +52,7 @@ export default class Ship {
   lastShotLimit: number;
   delete: boolean;
   imgShip: HTMLImageElement;
+  player: any;
   newWeapon:Function = (weapon:IshipWeapon):void => {
     this.weaponCurrent=weapon
     this.weaponCurrent.lifeSpan=weapon.duration
@@ -91,6 +93,7 @@ export default class Ship {
       x: 0,
       y: 0
     }
+    this.player = props.player
     this.onSound = props.onSound
     this.rotation = 0;
     this.rotationSpeed = 6;
@@ -337,6 +340,10 @@ export default class Ship {
       context.lineTo(-5, 7);
       context.lineTo(-10, 10);
       context.closePath();
+
+      context.font = "12px Arial";
+      context.fillStyle = "white";
+      context.fillText(this.player.name, 5, 50);
       //context.clip();
 
       //context.fill();

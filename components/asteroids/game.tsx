@@ -68,6 +68,13 @@ const mapDispatchToProps = (dispatch:any) => ({
   actions: bindActionCreators(actionCreators, dispatch),
 })
 
+export interface iPlayer {
+  id: string,
+  name: string,
+  keys: any,
+  isHost: boolean,
+}
+
 type IProps = {
   gameStatus: string
   score: number
@@ -79,6 +86,7 @@ type IProps = {
   shieldFuel: number,
   upgradeFuel: number,
   upgradeFuelTotal: number,
+  players: iPlayer[],
 }
 
   // Upgrades actions
@@ -94,6 +102,8 @@ export class Game extends Component<IProps> {
   particles:CanvasItem[];
   fps = 60;
   ctx:any;
+  players:iPlayer[];
+  
   constructor(props:IProps) {
     super(props);
     this.canvasRef = React.createRef<HTMLCanvasElement>();
@@ -141,6 +151,7 @@ export class Game extends Component<IProps> {
       inifityFuel: 500,
     }
     this.createObject = this.createObject.bind(this)
+    this.players = props.players
   }
 
   componentDidMount():void {
@@ -161,6 +172,11 @@ export class Game extends Component<IProps> {
   }
 
   componentDidUpdate(prevProps: IProps, prevState:IState):void {
+
+    if (prevProps.players !== this.props.players) {
+      this.players = prevProps.players
+    }
+
     if (prevProps.gameStatus !== this.props.gameStatus) {
       switch (this.props.gameStatus) {
         case 'INITIAL':
@@ -189,7 +205,10 @@ export class Game extends Component<IProps> {
             inifityScreen: true,
             inifityFuel: 0,
           })
-          createShip(this)
+          this.props.players.forEach((item:iPlayer) => {
+            createShip(this, item)
+          })
+          
           this.props.actions.UPDATE_GAME_STATUS('GAME_ON')
           break;
         case 'GAME_ABORT':
@@ -202,7 +221,9 @@ export class Game extends Component<IProps> {
           this.props.actions.UPDATE_GAME_STATUS('INITIAL')
           break;
         case 'GAME_NEW_LAUNCH':
-            createShip(this)
+            this.props.players.forEach((item:iPlayer) => {
+              createShip(this, item)
+            })
             this.props.actions.UPDATE_SHIELD_FUEL(0)
             this.props.actions.UPDATE_GAME_STATUS('GAME_ON')
           break;
@@ -452,13 +473,14 @@ async update():Promise<void> {
     }
 
     // Instant Key handling
-    if (this.props.gameStatus === 'INITIAL' && state.keys.space) {
+    const hostPlayer = this.players.find(item => item.isHost)
+    if (this.props.gameStatus === 'INITIAL' && hostPlayer && hostPlayer.keys.space) {
       this.props.actions.UPDATE_GAME_STATUS('GAME_START')
     }
-    if ((this.props.gameStatus === 'GAME_ON' || this.props.gameStatus === 'GAME_OVER') && state.keys.escape) {
+    if ((this.props.gameStatus === 'GAME_ON' || this.props.gameStatus === 'GAME_OVER') && hostPlayer && hostPlayer.keys.escape) {
       this.props.actions.UPDATE_GAME_STATUS('GAME_ABORT')
     }
-    if (this.props.gameStatus === 'GAME_GET_READY' && state.keys.space) {
+    if (this.props.gameStatus === 'GAME_GET_READY' && hostPlayer && hostPlayer.keys.space) {
       this.props.actions.UPDATE_GAME_STATUS('GAME_NEW_LAUNCH')
     }
 
@@ -496,7 +518,7 @@ async update():Promise<void> {
               this.setState({screen})
             }
           } />
-        <KeyHandler keys={this.state.keys} cb={(keys:Ikeys) => this.setState({keys})}/>
+        
         <BoardInit gameStatus={this.props.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
         <BoardGameOver gameStatus={this.props.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
         <TextFlasher allowedStatus={['GAME_GET_READY', 'GAME_RECOVERY']} text={`PRESS ENTER TO LAUNCH NEW SHIP`} gameStatus={this.props.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
