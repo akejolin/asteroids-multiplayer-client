@@ -34,6 +34,7 @@ import type {
 
 interface IProps {
   players: iPlayer[],
+  gameCode: string,
 }
 
   // Upgrades actions
@@ -48,9 +49,11 @@ export class Game extends Component<IProps> {
   fps = 60;
   ctx: any;
   players: iPlayer[];
+  gameCode: string;
   
   constructor(props:IProps) {
     super(props);
+    this.gameCode = props.gameCode;
     this.canvasRef = React.createRef<HTMLCanvasElement>();
     this.canvasItems = []
     this.canvasItemsGroups = {
@@ -322,6 +325,7 @@ export class Game extends Component<IProps> {
         <TextFlasher allowedStatus={['GAME_OVER']} text={`GAME OVER`} gameStatus={this.state.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
         <TextFlasher allowedStatus={['GAME_LEVEL_UP']} text={`LEVEL UP`} gameStatus={this.state.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
 
+        <div style={{zIndex: 100, position: "absolute"}}>Game ID: {this.gameCode}</div>
         <canvas
             id="canvas-board"
             ref={this.canvasRef}

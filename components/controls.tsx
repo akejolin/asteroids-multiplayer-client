@@ -4,7 +4,9 @@ import Game from '../components/asteroids/game'
 import { Ikeys, iPlayer } from './asteroids/game.types'
 import KeyHandler from './asteroids/keys'
 
-export const Controls = () => {
+export const Controls = (props: {gameCode: string}) => {
+
+  // Configure multiplayer
 
   const [keys, setKeys] = useState({
     left  : false,
@@ -37,7 +39,7 @@ export const Controls = () => {
   return (
     <>
       <KeyHandler keys={keys} cb={(keys:Ikeys) => setKeys(keys)} />
-      <Game players={players} />
+      <Game gameCode={props.gameCode} players={players} />
     </>
   )
 }

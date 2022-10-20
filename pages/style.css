@@ -3,6 +3,7 @@ body {
   margin: 0;
   font-family: 'PT Mono', serif;
   color: #ffffff;
+  background: #000000;
 }
 canvas {
   display: block;
