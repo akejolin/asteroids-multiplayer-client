@@ -92,14 +92,9 @@ export interface CanvasItemGroups {
 export interface IState {
   screen: Iscreen,
   context: CanvasRenderingContext2D | null,
-  colorThemeIndex: number,
-  hasError: boolean,
-  nextPresentDelay: number,
-  ufoDelay:number,
-  inifityScreen:boolean,
-  inifityFuel:number,
   gameStatus: string,
   level: number,
+  colorThemeIndex: number;
 }
 
 

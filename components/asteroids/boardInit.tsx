@@ -1,21 +1,27 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
-
-import ProcentBar from '../procentBar'
+import React, { useState, useEffect } from 'react'
 import FlexView from '../flexView'
-import {themes} from '../asteroids/color-theme'
+import {iPlayer} from './game.types'
 
 type ComponentProps = {
   gameStatus: string,
   colorThemeIndex: number,
+  players: iPlayer[]
 }
 
 
 export const InitBoard = (props: ComponentProps) => {
   const [highscoreDisplayed, setHighscoreDisplayed] = useState(false)
+  
+  useEffect(() => {
+    console.log('props.players: ', props.players)
+  }, [props.players])  
+
 
   if (props.gameStatus !== "INITIAL") {
     return null
   }
+
+
 
   const styles = {
     infoBtn: {
@@ -25,6 +31,8 @@ export const InitBoard = (props: ComponentProps) => {
       padding: '15px 9px 9px 9px',
     }
   }
+
+
 
 
 
@@ -80,12 +88,24 @@ export const InitBoard = (props: ComponentProps) => {
                   </span> = Quit
                 </div>
               </FlexView>
+              <FlexView row>
+                {
+                  props.players.map(item => (
+                    <div>
+                      {item.name}
+                    </div>
+                  ))
+                }
+              </FlexView>
             </FlexView>
           </React.Fragment>
         )}
       </FlexView>
     </div>
   )
+}
+InitBoard.defaultProps = {
+  players: []
 }
 
 export default InitBoard
