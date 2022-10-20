@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import React from 'react'
 
-import ProcentBar from '../procentBar'
+
 import FlexView from '../flexView'
-import {themes} from '../asteroids/color-theme'
+
 
 type ComponentProps = {
   gameStatus: string,
