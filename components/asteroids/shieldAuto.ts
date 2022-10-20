@@ -9,8 +9,7 @@ export interface Iprops {
   onSound:Function,
   onStopSound:Function,
   create:Function,
-  ship:CanvasItem,
-  updateShieldFuel:Function,
+  ship:any,
 }
 export interface IShield extends CanvasItem {}
 
@@ -29,12 +28,10 @@ export default class AutoShield {
   fuel:number;
   public isActive:boolean;
   delete:boolean;
-  updateShieldFuel:Function
   public radarRadius:number = 20
   public radarThreshold: number = 0
   flashInterval:number = 5
-
- 
+  originId: string;
 
   constructor(props:Iprops) {
     this.position = props.position
@@ -51,15 +48,12 @@ export default class AutoShield {
     this.alpha = 0.1;
     this.ship = props.ship;
     this.fuel = 500
-    this.updateShieldFuel = props.updateShieldFuel
     this.isActive = false
     this.delete = false;
-    this.updateShieldFuel(this.fuel)
+    this.originId = props.ship.player.id
 
   }
   destroy(byWho:string) {
-
-    this.updateShieldFuel(0)
     this.delete = true
   }
 
@@ -99,13 +93,11 @@ export default class AutoShield {
     }
 
     if (this.isActive) {
-      this.alpha = 1 //this.fuel/500
+      this.alpha = 1
 
       this.fuel--
       this.radarThreshold--
-      this.updateShieldFuel(this.fuel)
     } else {
-      //his.alpha = 0.1
       if (this.fuel < 200) {
         this.alpha = 0.1
         if (this.flashInterval-- < 0) {
@@ -121,8 +113,6 @@ export default class AutoShield {
     this.position.x = this.ship.position.x;
     this.position.y = this.ship.position.y;
 
-
-
     const circle = (_ctx:CanvasRenderingContext2D, x:number, y:number, r:number, c:string) => {
       _ctx.beginPath()
       var rad = _ctx.createRadialGradient(x, y, 1, x, y, r)
@@ -132,8 +122,7 @@ export default class AutoShield {
       _ctx.arc(x, y, r, 0, Math.PI*2, false)
       _ctx.closePath()
       _ctx.fill()
-      //_ctx.strokeStyle = this.color
-      //_ctx.stroke()
+
     }
     const context = ctx
     if (!context) {
@@ -143,7 +132,6 @@ export default class AutoShield {
     // Draw
     context.save()
     context.translate(this.position.x, this.position.y)
-    //context.rotate(1 * Math.PI / 180) // this.rotation
 
     context.lineWidth = 2
     context.globalAlpha = this.alpha

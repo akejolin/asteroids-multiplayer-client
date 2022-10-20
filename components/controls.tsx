@@ -1,18 +1,10 @@
 import React, { useState, useEffect } from 'react'
 
 import Game from '../components/asteroids/game'
-import type { Ikeys } from './asteroids/keys'
+import { Ikeys, iPlayer } from './asteroids/game.types'
 import KeyHandler from './asteroids/keys'
 
 export const Controls = () => {
-
-  interface iPlayer {
-    id: string,
-    name: string,
-    keys: Ikeys,
-    isHost: boolean,
-    score: number
-  }
 
   const [keys, setKeys] = useState({
     left  : false,
@@ -33,7 +25,8 @@ export const Controls = () => {
       name: 'Jonas',
       isHost: true,
       keys,
-      score: 0 
+      score: 0,
+      lives: 3,
     }])
   }
 
@@ -42,10 +35,11 @@ export const Controls = () => {
   },[])
 
   return (
-  <>
-    <KeyHandler keys={keys} cb={(keys:Ikeys) => setKeys(keys)} />
-    <Game players={players} />
-  </>)
+    <>
+      <KeyHandler keys={keys} cb={(keys:Ikeys) => setKeys(keys)} />
+      <Game players={players} />
+    </>
+  )
 }
 
 

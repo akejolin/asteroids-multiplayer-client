@@ -178,18 +178,20 @@ export default class Ship {
 
   render(state:IState, ctx:any):void {
 
+    const {keys} = this.player
+
     // Controls
-    if (state.keys.up) {
+    if (keys.up) {
       this.accelerate();
     }
-    if (state.keys.left) {
+    if (keys.left) {
       this.rotate('LEFT');
     }
-    if (state.keys.right) {
+    if (keys.right) {
       this.rotate('RIGHT');
     }
 
-    if (state.keys.space && this.weaponCurrent.type !== 'default') { 
+    if (keys.space && this.weaponCurrent.type !== 'default') { 
       const item = this.weaponCurrent as IcurrentWeapon
         if (item.lifeSpan-- < 0) { 
           this.newWeapon(this.weapondDefault)
@@ -203,7 +205,7 @@ export default class Ship {
     }
 
     // secondary weapon
-    if (state.keys.weapon && this.secondaryWeapon.type !== 'default') { 
+    if (keys.weapon && this.secondaryWeapon.type !== 'default') { 
       const item = this.secondaryWeapon as IcurrentSecondaryWeapon
         if (item.lifeSpan-- < 0) { 
           this.updateSecondaryWeapon(null)
@@ -218,7 +220,7 @@ export default class Ship {
         }
     }
 
-    if (state.keys.weapon && this.secondaryWeapon.type !== 'default' && (Date.now() - this.secondaryLastShot > this.secondaryWeapon.lastShotLimit)) {
+    if (keys.weapon && this.secondaryWeapon.type !== 'default' && (Date.now() - this.secondaryLastShot > this.secondaryWeapon.lastShotLimit)) {
       switch(this.secondaryWeapon.type) {
         case 'speedShot':
           this.onSound({
@@ -232,7 +234,7 @@ export default class Ship {
       this.secondaryLastShot = Date.now();
     }
 
-    if (state.keys.space && Date.now() - this.lastShot > this.lastShotLimit) {
+    if (keys.space && Date.now() - this.lastShot > this.lastShotLimit) {
       switch(this.weaponCurrent.type) {
         case 'triple':
           const bulletLeft = new Bullet({ship: this, additionalRotation: -10});
@@ -267,20 +269,6 @@ export default class Ship {
     if (this.rotation < 0) {
       this.rotation += 360;
     }
-
-    // Screen edges
-    /*
-    if (this.position.x > state.screen.width) {
-      this.position.x = 0
-    } else if (this.position.x < 0) {
-      this.position.x = state.screen.width
-    }
-    if (this.position.y > state.screen.height) {
-      this.position.y = 0
-    } else if (this.position.y < 0) {
-      this.position.y = state.screen.height
-    }
-    */
 
     // Screen edges
     if (state.inifityScreen) {
@@ -343,7 +331,7 @@ export default class Ship {
 
       context.font = "12px Arial";
       context.fillStyle = "white";
-      context.fillText(this.player.name, 5, 50);
+      context.fillText(`${this.player.name}, ⭐: ${this.player.score}`, 5, 50);
       //context.clip();
 
       //context.fill();

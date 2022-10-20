@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Ikeys } from './game.types'
 
 export enum KEY {
     LEFT = 37,
@@ -13,17 +14,6 @@ export enum KEY {
     WEAPON = 70,
     ESCAPE = 27,
 }
-
-export interface Ikeys {
-    left  : boolean,
-    right : boolean,
-    up    : boolean,
-    down  : boolean,
-    space : boolean,
-    return: boolean,
-    weapon: boolean,
-    escape: boolean,
-  }
 
 type IProps = {
     cb:Function,

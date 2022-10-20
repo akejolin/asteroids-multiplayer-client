@@ -52,10 +52,12 @@ export default class Ufo {
   ufoImage: string;
   public isInRadar;
   id:number;
+  originId: string;
 
   constructor(props:Iprops) {
     this.id = Date.now() + randomNumBetween(0, 100000)
     this.type = 'ufo'
+    this.originId = 'space'
     this.position = props.position
     this.velocity = {
       x: randomNumBetween(-2.5, 2.5),
@@ -109,10 +111,10 @@ export default class Ufo {
     })
     this.create(bullet, 'ufoBullets');
   }
-  destroy(byWho:string) {
+  destroy(objectType:string, originId:string) {
     this.delete = true;
     this.onDie();
-    this.addScore(this.score);
+    this.addScore(this.score, originId);
     this.onSound({
       file: 'crash',
       status: 'PLAYING'
@@ -155,23 +157,7 @@ export default class Ufo {
     this.position.y += this.velocity.y;
 
     // Rotation
-    //this.rotation += this.rotationSpeed;
     this.rotation = _rotation
-    /*
-    if (this.rotation >= 360) {
-      this.rotation -= 360;
-    }
-    if (this.rotation < 0) {
-      this.rotation += 360;
-    }
-    */
-    // Screen edges
-    /*
-    if (this.position.x > state.screen.width + this.radius) this.position.x = -this.radius;
-    else if (this.position.x < -this.radius) this.position.x = state.screen.width + this.radius;
-    if (this.position.y > state.screen.height + this.radius) this.position.y = -this.radius;
-    else if (this.position.y < -this.radius) this.position.y = state.screen.height + this.radius;
-    */
 
     // Screen edges
     if (state.inifityScreen) {

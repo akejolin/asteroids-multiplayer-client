@@ -2,7 +2,7 @@ import { rotatePoint } from './helpers';
 import {themes} from './color-theme'
 import { randomNumBetween } from './helpers';
 
-import type { CanvasItem, IState, Iposition} from './game.types'
+import type { CanvasItem, IState, Iposition, iBullet} from './game.types'
 
 export interface Iprops {
   ship?: any
@@ -24,29 +24,26 @@ export default class Bullet {
   velocity: Iposition;
   radius: number;
   delete: boolean;
-  range: number = 400
-  lifeSpan: number = 50
-  onSound: Function = () => {}
-  color: string = 'default';
+  range: number;
+  lifeSpan: number
+  onSound: Function
+  color: string;
   public isInRadar: boolean;
   id:number;
+  originId: string; 
 
   constructor(props:Iprops) {
     this.id = Date.now() + randomNumBetween(0, 100000)
     this.type = 'bullet'
     this.rotation = props.ship.rotation;
+    this.originId = props.ship.player.id || 'space';
     this.delete = false;
 
     this.color = props.color ? props.color : 'default'
-    if (props.range) {
-      this.range = props.range
-    }
-    if (props.lifeSpan) {
-      this.lifeSpan = props.lifeSpan
-    }
-    if (props.onSound) {
-      this.onSound = props.onSound
-    }
+    this.range = props.range ? props.range : 400
+    this.lifeSpan = props.lifeSpan ? props.lifeSpan : 50
+    this.onSound = props.onSound ? props.onSound : () => {}
+    
     
     
     if (props.additionalRotation) {
@@ -63,7 +60,6 @@ export default class Bullet {
       y: props.ship.position.y + posDelta.y
     };
 
-    console.log(posDelta.x/2)
     this.velocity = {
       x:(posDelta.x/2),
       y:(posDelta.y/2)
