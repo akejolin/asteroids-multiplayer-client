@@ -88,6 +88,7 @@ const ConnectPage = () => {
   const { firestore, servers } = setupFirebase()
 
   localConnection = new RTCPeerConnection(servers);
+  remoteConnection = new RTCPeerConnection(servers);
 
   const [gameCode, setGameCode] = useState('')
   const [userType, setUserType] = useState('NONE' as tUserType)
@@ -103,6 +104,7 @@ const ConnectPage = () => {
     setUserType('HOST')
 
     sendChannel = localConnection.createDataChannel('sendDataChannel');
+    
     console.log('Created send data channel');
 
     sendChannel.onopen = onSendChannelStateChange;
@@ -113,9 +115,21 @@ const ConnectPage = () => {
       onIceCandidate(pc, event);
     };
 
+    remoteConnection.onicecandidate = (event: any) => {
+      console.log(
+        'ice event', event
+      )
+      event.candidate && answerCandidates.add(event.candidate.toJSON());
+    };
+
+    remoteConnection.ondatachannel = receiveChannelCallback;
+
     // Create offer
     const offerDescription = await localConnection.createOffer();
+    const remoteDesc = await remoteConnection.createOffer();
     await localConnection.setLocalDescription(offerDescription);
+    
+    await remoteConnection.setRemoteDescription(new RTCSessionDescription(remoteDesc));
 
     const offer = {
       sdp: offerDescription.sdp,
@@ -143,12 +157,7 @@ const ConnectPage = () => {
           const candidate = new RTCIceCandidate(change.doc.data());
           localConnection.addIceCandidate(candidate);
           console.log('added candidate to peer connection! lets play')
-          remoteConnection = new RTCPeerConnection(servers);
-
-          remoteConnection.onicecandidate = e => {
-            onIceCandidate(remoteConnection, e);
-          };
-          remoteConnection.ondatachannel = receiveChannelCallback;
+          
         
         }
       });
@@ -165,8 +174,6 @@ const ConnectPage = () => {
     const callDoc = firestore.collection('calls').doc(gameCode);
     const answerCandidates = callDoc.collection('answerCandidates');
     const offerCandidates = callDoc.collection('offerCandidates');
-
-    remoteConnection = new RTCPeerConnection(servers);
 
     remoteConnection.onicecandidate = (event: any) => {
       console.log(
@@ -262,6 +269,7 @@ const ConnectPage = () => {
               <input type="text" id="dataChannelSend"
                 placeholder="Enter your name"></input>
             </div>
+            <button onClick={sendData}>Send</button>
             <div id="receive">
               <h2>Players</h2>
               <textarea id="dataChannelReceive"></textarea>
