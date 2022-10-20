@@ -17,6 +17,7 @@ export default class Star {
   radius;
   rotationSpeed;
   delete;
+  originId: string;
 
 
   constructor(props: Iprops) {
@@ -29,6 +30,7 @@ export default class Star {
       x: 0, //randomNumBetween(-1.5, 1.5),
       y: 0.2 //randomNumBetween(-1.5, 1.5),
     }
+    this.originId = 'space'
     this.rotation = 0;
     this.rotationSpeed = randomNumBetween(-1, 1)
     this.radius = props.radius || 1;

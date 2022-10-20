@@ -32,11 +32,13 @@ export default class Bullet {
   color: string = 'default';
   public isInRadar: boolean;
   id:number;
+  originId: string; 
 
   constructor(props:Iprops) {
     this.id = Date.now() + randomNumBetween(0, 100000)
     this.type = 'bullet'
     this.rotation = props.ship.rotation;
+    this.originId = props.ship.player.id
     this.delete = false;
 
     this.color = props.color ? props.color : 'default'

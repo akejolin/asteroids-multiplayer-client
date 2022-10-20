@@ -51,7 +51,7 @@ export const generateAsteroids = (that:any, amount:number) => {
   }
 
 
-  export const createShip = (that:any) => {
+  export const createShip = (that:any, player:any) => {
     let ship = new Ship({
       position: {
         x: that.state.screen.width/2,
@@ -59,15 +59,13 @@ export const generateAsteroids = (that:any, amount:number) => {
       },
       //lastShotLimit: 0.1,
       create: that.createObject,
+      player,
       onDie: () => {},
       onSound: that.onSound.bind(that),
-      updateUpgradeFuel: (data:any) => {
-        return that.props.actions.UPDATE_UPGRADE_FUEL(data)},
-      
+      updateUpgradeFuel: (data:any) => that.setState({upgradeFuel: data})
     });
     that.createObject(ship, 'ships')
   }
-
 
   export const createUfo = (that:any) => {
 
@@ -117,27 +115,7 @@ export const generatePresent = (that:any) => {
       that.createObject(present, 'presents');
   }
 
-export const generateShield = (that:any) => {
-    let ship = that.canvasItemsGroups['ships'].find((i:CanvasItem) => i.type === 'ship');
-    if (!ship) {
-      return;
-    }
-    that.removeCanvasItems(['shield'])
-    let shield = new Shield({
-      position: {
-        x: randomNumBetweenExcluding(0, that.state.screen.width, -100, +100),
-        y: randomNumBetweenExcluding(0, that.state.screen.height, -100, +100)
-      },
-      create: that.createObject.bind(that),
-      ship: ship,
-      updateShieldFuel: (data:number) => that.props.actions.UPDATE_SHIELD_FUEL(data),
-      onSound: that.onSound.bind(that)
-    })
-    that.createObject(shield, 'shields');
-  }
-
-  export const generateAutoShield = (that:any) => {
-    let ship = that.canvasItemsGroups['ships'].find((i:CanvasItem) => i.type === 'ship');
+  export const generateAutoShield = (that:any, ship:any) => {
     if (!ship) {
       return;
     }
@@ -149,7 +127,6 @@ export const generateShield = (that:any) => {
       },
       create: that.createObject.bind(that),
       ship: ship,
-      updateShieldFuel: (data:number) => that.props.actions.UPDATE_SHIELD_FUEL(data),
       onSound: that.onSound.bind(that),
       onStopSound: that.onStopSound.bind(that)
     })

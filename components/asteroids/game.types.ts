@@ -1,9 +1,33 @@
-import type {Ikeys} from './keys'
-import type { Iscreen } from './screen-handler'
+
+export interface Iscreen {
+  width: number,
+  height: number,
+  ratio: number,
+}
 
 export interface Iposition {
   x: number,
   y: number,
+}
+
+export interface iPlayer {
+  id: string,
+  name: string,
+  keys: Ikeys,
+  isHost: boolean,
+  score: number
+  lives: number
+}
+
+export interface Ikeys {
+  left  : boolean,
+  right : boolean,
+  up    : boolean,
+  down  : boolean,
+  space : boolean,
+  return: boolean,
+  weapon: boolean,
+  escape: boolean,
 }
 
 export interface CanvasItem {
@@ -28,7 +52,26 @@ export interface Ishield extends CanvasItem {
   addInterferer?:Function,
   removeInterferer?:Function,
 }
+
+export interface iBullet extends CanvasItem {
+  type: string,
+  rotation: number,
+  position: Iposition,
+  originPos: Iposition,
+  velocity: Iposition,
+  radius: number,
+  delete: boolean,
+  range: number,
+  lifeSpan: number,
+  onSound: Function,
+  color: string,
+  isInRadar: boolean,
+  id: number,
+  originId: string,
+}
+
 export interface ShipItem extends CanvasItem {
+  player: iPlayer,
   upgrade: Function,
   newWeapon: Function,
   updateSecondaryWeapon:Function,
@@ -49,15 +92,14 @@ export interface CanvasItemGroups {
 export interface IState {
   screen: Iscreen,
   context: CanvasRenderingContext2D | null,
-  keys : Ikeys,
   colorThemeIndex: number,
-  upgradeFuel: number,
-  readyforNextLife: boolean,
   hasError: boolean,
   nextPresentDelay: number,
   ufoDelay:number,
   inifityScreen:boolean,
   inifityFuel:number,
+  gameStatus: string,
+  level: number,
 }
 
 

@@ -18,46 +18,6 @@ export const updateObjects = (targets:CanvasItemGroups, state:IState, ctx: any) 
   resolve()
 
 })
-  
-  /*
-  
-   => (targets:CanvasItemGroups, state:IState):void => {
-  let index = 0;
-  for (let key in targets) {
-    index = 0;
-    const items = targets[key];
-    for (let item of items) {
-      if (item.delete) {
-        items.splice(index, 1);
-      } else{
-        items[index].render(state);
-      }
-      index++;
-    }
-  }
-}
-*/
-/*
-export const RectCircleColliding:Function = (rect:any, circle:any):boolean => {
-  
-  //var dx=Math.abs(circle.position.x-(rect.position.x + rect.w/2));
-  //var dy=Math.abs(circle.position.y-(rect.position.y + rect.position.y/2));
-  var dx=Math.abs(circle.position.x-(rect.position.x+rect.w/2));
-  var dy=Math.abs(circle.position.y-(rect.position.y+rect.h/2));
-
-  if( dx > circle.radius + rect.w/2 ){ return(false); }
-  if( dy > circle.radius + rect.h/2 ){ return(false); }
-
-  if( dx <= rect.w ){ return(true); }
-  if( dy <= rect.h ){ return(true); }
-
-  var dx=dx-rect.w;
-  var dy=dy-rect.h
-  var length = Math.sqrt(dx * dx + dy * dy);
-
-  return(length<=circle.radius);
-}
-*/
 
 export const RectCircleColliding:Function = (rect:any, circle:any):boolean => {
   const distX = Math.abs(circle.position.x - rect.position.x-rect.w/2);

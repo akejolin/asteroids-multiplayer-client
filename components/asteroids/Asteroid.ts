@@ -40,6 +40,7 @@ export default class Asteroid {
   delete;
   public isInRadar;
   id: number;
+  originId: string;
 
 
   constructor(props: Iprops) {
@@ -49,6 +50,7 @@ export default class Asteroid {
       x: randomNumBetween(-1.5, 1.5),
       y: randomNumBetween(-1.5, 1.5),
     }
+    this.originId = 'space'
     this.rotation = 0;
     this.rotationSpeed = randomNumBetween(-1, 1)
     this.radius = props.size;
@@ -64,9 +66,9 @@ export default class Asteroid {
 
   }
 
-  destroy(byWho:string):void {
+  destroy(objectType:string, originId?:string):void {
     
-    if (byWho !== 'nova') {
+    if (objectType !== 'nova') {
       this.onSound({
         file: 'asteroidHit',
         status: 'PLAYING'
@@ -74,7 +76,7 @@ export default class Asteroid {
     }
     
     this.delete = true;
-    this.addScore(this.score);
+    this.addScore(this.score, originId);
     // Explode
       const runs = this.radius
       for (let i = 0; i < runs; i++) {
@@ -94,7 +96,7 @@ export default class Asteroid {
       }
 
     // Break into smaller asteroids
-    const len = byWho === 'shield' ? 1 : 2
+    const len = objectType === 'shield' ? 1 : 2
 
     if (this.radius > 10){
       for (let i = 0; i < len; i++) {
