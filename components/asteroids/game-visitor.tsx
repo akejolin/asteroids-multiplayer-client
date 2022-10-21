@@ -35,6 +35,8 @@ import type {
 interface IProps {
   players: iPlayer[],
   gameCode: string,
+  receiveData: any,
+  sendData: Function,
 }
 
   // Upgrades actions
@@ -86,23 +88,37 @@ export class Game extends Component<IProps> {
       const context = this.canvasRef.current!.getContext('2d');
       this.ctx = context
     }
-    this.update()
-  
-    this.setState({gameStatus: 'INITIAL'})
-    window.addEventListener('click', () => {
-      if (this.state.gameStatus === 'INITIAL') {
-        this.setState({gameStatus: 'GAME_START'})
-      }
-    })
   }
 
   componentWillUnmount():void {
     clearAllIntervals()
     this.removeAllCanvasItems()
-    this.setState({gameStatus: 'STOPPED'})
+    //this.setState({gameStatus: 'STOPPED'})
+  }
+
+  actOnRemoteAction() {
+    const payload = this.props.receiveData
+    switch (payload.action) {
+      case 'stateSync':
+        this.setState(payload.data)
+        this.update();
+      break;
+      case 'gameStatus':
+        this.setState({gameStatus: `${payload.data}`})
+      break;
+      case 'canvasItemsGroupsSync':
+      this.canvasItemsGroups = payload.data
+      this.update();
+      break;
+    }
   }
 
   componentDidUpdate(prevProps: IProps, prevState:IState):void {
+
+    if (prevProps.receiveData !== this.props.receiveData) {
+      this.actOnRemoteAction()
+    }
+
     if (prevProps.players !== this.props.players) {
       this.players = this.props.players
     }
@@ -114,41 +130,17 @@ export class Game extends Component<IProps> {
           break;
         case 'GAME_ON':
           clearAllIntervals()
-          this.onSound({
-            file: 'background',
-            status: 'PLAYING'
-          })
+          this.onSound({file: 'background',status: 'PLAYING'})
           break;
         case 'GAME_START':
           clearAllIntervals()
-          this.removeAllCanvasItems()
-          generateAsteroids(this, 1)
-          
-          this.setLives(2)
-
-          generateStars(this)
-          this.setState({
-            level: 0,
-            gameStatus: 'GAME_ON'
-          })
-          this.props.players.forEach((item:iPlayer) => {
-            item.lives = 3,
-            item.score = 0,
-            createShip(this, item)
-          })
-          
+          this.removeAllCanvasItems()    
           break;
         case 'GAME_ABORT':
           this.removeAllCanvasItems()
-          this.setState({
-            gameStatus: 'INITIAL'
-          })
+          //this.setState({gameStatus: 'INITIAL'})
           break;
         case 'GAME_NEW_LAUNCH':
-            this.props.players.forEach((item:iPlayer) => {
-              createShip(this, item)
-            })
-            this.setState({gameStatus: 'GAME_ON'})
           break;
         case 'GAME_LEVEL_UP':
           addInterval('waitLevelUp', 1000, () => {
@@ -159,7 +151,6 @@ export class Game extends Component<IProps> {
         case 'GAME_OVER':
           addInterval('abortAfterGameOver', 4000, () => {
             removeInterval('abortAfterGameOver')
-            this.setState({gameStatus: 'GAME_ABORT'})
           })
           break;
       }
@@ -219,11 +210,13 @@ export class Game extends Component<IProps> {
     generateAsteroids(this, amountOfAsteroids)
     
     // Todo: add score to all players
-    this.setState({gameStatus: 'GAME_ON'})
+    //this.setState({gameStatus: 'GAME_ON'})
   }
 
   async update():Promise<void> {
     
+    console.log('Update: ', this.canvasItemsGroups)
+
     const {state} = this
     const {screen} = state
     const context = this.ctx
@@ -238,71 +231,10 @@ export class Game extends Component<IProps> {
       context.globalAlpha = 1;
     }
 
-
-    const collisions:collisionObject[] = [
-      {
-        primary: 'bullet',
-        secondary: [ 'asteroid'],
-        cb: (item1:any, item2:any):void => {
-          item1.destroy(item2.type, item2.originId);
-          item2.destroy(item1.type, item1.originId);
-        }
-      },
-      {
-        primary: 'ship',
-        secondary: [ 'asteroid'],
-        cb: (item1:any, item2:CanvasItem):void => {
-          item1.destroy(item2.type);
-          item2.destroy(item1.type);
-
-          const target = this.players.find(item => item.id === item1.player.id)
-          if (target) {
-            target.lives = target.lives -= 1
-            target.lives > 0 ? createShip(this, target) : null
-          }
-
-          if (!this.players.find(item => item.lives > 0)) {
-            this.setState({gameStatus: 'GAME_OVER'})
-          }
-        }
-      },   
-    ]
-    await collisionBetweens(this.canvasItemsGroups, collisions)
-
-    // Instant Key handling
-    const hostPlayer = this.players.filter(player => player.isHost === true)[0]
-    
-
-    if (this.state.gameStatus === 'INITIAL' && hostPlayer && hostPlayer.keys.space) {
-      this.setState({gameStatus: 'GAME_START'})
-    }
-    if (this.state.gameStatus === 'GAME_ABORT' && hostPlayer && hostPlayer.keys.space) {
-      this.setState({gameStatus: 'INITIAL'})
-    }
-    if ((this.state.gameStatus === 'GAME_ON' || this.state.gameStatus === 'GAME_OVER') && hostPlayer && hostPlayer.keys.escape) {
-      this.setState({gameStatus: 'GAME_ABORT'})
-    }
-
-
-    if (!this.canvasItemsGroups['asteroids'].length && this.state.gameStatus === 'GAME_ON') {
-      this.setState((prev:IState) => ({
-        level: prev.level + 1,
-        gameStatus: 'GAME_LEVEL_UP'
-      }))
-    }
-
     await updateObjects(this.canvasItemsGroups, this.state, this.ctx)
-
+    
     context.restore();
-
-    // Engine
-    if (this.fps !== 60) {
-      setTimeout(() => {
-        requestAnimationFrame(() => this.update());
-      }, 1000 / this.fps);
-    } else {
-      requestAnimationFrame(() => this.update());
-    }
+  
   }
 
   render() {
@@ -325,7 +257,7 @@ export class Game extends Component<IProps> {
         <TextFlasher allowedStatus={['GAME_OVER']} text={`GAME OVER`} gameStatus={this.state.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
         <TextFlasher allowedStatus={['GAME_LEVEL_UP']} text={`LEVEL UP`} gameStatus={this.state.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
 
-        <div style={{zIndex: 100, position: "absolute"}}>Game ID: {this.gameCode}</div>
+        <div style={{zIndex: 100, position: "absolute"}}>Visiting game: {this.gameCode}</div>
         <canvas
             id="canvas-board"
             ref={this.canvasRef}
