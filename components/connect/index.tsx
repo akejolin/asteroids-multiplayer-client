@@ -1,11 +1,13 @@
 import { create } from "domain";
 import React, { useState, useEffect } from "react";
 import Controls from '../controls'
-
+import {uuidv4} from './uuidv4'
 import { setupFirebase } from "../utils/firebaseConfig";
+import FlexView from '../flexView'
 
 
 type tUserType = 'NONE' | 'HOST' | 'VISITOR'
+type tStageType = 'INIT' | 'WAIT' | 'PLAY'
 
 
 let pc: any;
@@ -14,56 +16,19 @@ let receiveChannel: any;
 let localConnection:any;
 let remoteConnection:any;
 
-function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
-    (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-  );
-}
-
-function receiveChannelCallback(event:any) {
-  console.log('Receive Channel Callback');
-  receiveChannel = event.channel;
-  receiveChannel.onmessage = onReceiveMessageCallback;
-  receiveChannel.onopen = onReceiveChannelStateChange;
-  receiveChannel.onclose = onReceiveChannelStateChange;
-}
-
-function onReceiveMessageCallback(event: any) {
-  console.log('Received Message', event.data);
-  const jsonData = JSON.parse(event.data);
-  if (jsonData.newPlayer) {
-    console.log("new player joined!", jsonData.newPlayer)
-    // dataChannelReceive.value += `${jsonData.newPlayer} (${jsonData.id}) \n`;
-  }
-
-}
-
-function onSendChannelStateChange() {
-  const readyState = sendChannel.readyState;
-  console.log('Send channel state is: ' + readyState);
-  // if (readyState === 'open') {
-  //   dataChannelSend.disabled = false;
-  //   dataChannelSend.focus();
-  //   sendButton.disabled = false;
-  //   closeButton.disabled = false;
-  // } else {
-  //   dataChannelSend.disabled = true;
-  //   sendButton.disabled = true;
-  //   closeButton.disabled = true;
-}
 
 
 function onReceiveChannelStateChange() {
   const readyState = receiveChannel.readyState;
-  console.log(`Receive channel state is: ${readyState}`);
+  //console.log(`Receive channel state is: ${readyState}`);
 }
 
 function onAddIceCandidateSuccess() {
-  console.log('AddIceCandidate success.');
+  //console.log('AddIceCandidate success.');
 }
 
 function onAddIceCandidateError(error:any) {
-  console.log(`Failed to add Ice Candidate: ${error.toString()}`);
+  //console.log(`Failed to add Ice Candidate: ${error.toString()}`);
 }
 
 function getOtherPc(pc:any) {
@@ -81,34 +46,46 @@ function onIceCandidate(pc:any, event:any) {
           onAddIceCandidateSuccess,
           onAddIceCandidateError
       );
-  console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
+  //console.log(`${getName(pc)} ICE candidate: ${event.candidate ? event.candidate.candidate : '(null)'}`);
 }
 
-const ConnectPage = () => {
-  const { firestore, servers } = setupFirebase()
+const { firestore, servers } = setupFirebase()
 
-  localConnection = new RTCPeerConnection(servers);
-  remoteConnection = new RTCPeerConnection(servers);
+localConnection = new RTCPeerConnection(servers);
+remoteConnection = new RTCPeerConnection(servers);
+
+
+// -------------------------------------------------------------------------------------------------------
+
+const ConnectPage = () => {
 
   const [gameCode, setGameCode] = useState('')
+  const [receiveData, setReceiveData] = useState('')
+  const [stage, setStage] = useState('INIT' as tStageType)
   const [userType, setUserType] = useState('NONE' as tUserType)
-
 
   const create = async () => {
     const callDoc = await firestore.collection('calls').doc();
-    const offerCandidates = await callDoc.collection('offerCandidates');
-    const answerCandidates = await callDoc.collection('answerCandidates');
 
-    console.log('callDoc.id', callDoc.id)
+    const answerCandidates = await callDoc.collection('answerCandidates');
     setGameCode(callDoc.id)
-    setUserType('HOST')
+    
 
     sendChannel = localConnection.createDataChannel('sendDataChannel');
     
     console.log('Created send data channel');
 
-    sendChannel.onopen = onSendChannelStateChange;
-    sendChannel.onclose = onSendChannelStateChange;
+    sendChannel.onopen = () => {
+      const readyState = sendChannel.readyState;
+  
+      setUserType('HOST')
+      setStage('PLAY')
+    };
+    sendChannel.onclose = () => {
+      const readyState = sendChannel.readyState;
+      setUserType('NONE')
+      setStage('INIT')
+    };
 
     localConnection.onicecandidate = (event: any) => {
       console.log("onicecandidate", event)
@@ -122,7 +99,17 @@ const ConnectPage = () => {
       event.candidate && answerCandidates.add(event.candidate.toJSON());
     };
 
-    remoteConnection.ondatachannel = receiveChannelCallback;
+    remoteConnection.ondatachannel = (event:any) => {
+      console.log('Receive Channel Callback');
+      receiveChannel = event.channel;
+      receiveChannel.onmessage = (event: any) => {
+
+        // RECEIVE REMOTE MESSAGES
+        setReceiveData(JSON.parse(event.data))
+      };
+      receiveChannel.onopen = onReceiveChannelStateChange;
+      receiveChannel.onclose = onReceiveChannelStateChange;
+    };
 
     // Create offer
     const offerDescription = await localConnection.createOffer();
@@ -146,7 +133,7 @@ const ConnectPage = () => {
       if (!localConnection.currentRemoteDescription && data?.answer) {
         const answerDescription = new RTCSessionDescription(data.answer);
         localConnection.setRemoteDescription(answerDescription);
-        console.log('Some answerd!')
+        console.log('Some answered!')
       }
     });
 
@@ -157,19 +144,16 @@ const ConnectPage = () => {
           const candidate = new RTCIceCandidate(change.doc.data());
           localConnection.addIceCandidate(candidate);
           console.log('added candidate to peer connection! lets play')
-          
-        
         }
       });
     });
 
-
+    setStage('WAIT')
 
   }
 
   const join = async () => {
     console.log('join was clicked')
-    console.log('game code', gameCode);
 
     const callDoc = firestore.collection('calls').doc(gameCode);
     const answerCandidates = callDoc.collection('answerCandidates');
@@ -183,7 +167,7 @@ const ConnectPage = () => {
     };
 
     const callData = (await callDoc.get()).data();
-    console.log('callData', callData)
+    
 
     const offerDescription = callData?.offer;
     await remoteConnection.setRemoteDescription(new RTCSessionDescription(offerDescription));
@@ -195,7 +179,7 @@ const ConnectPage = () => {
       type: answerDescription.type,
       sdp: answerDescription.sdp,
     };
-    console.log('I want to answer the call', answer)
+    
     await callDoc.update({ answer });
 
     offerCandidates.onSnapshot((snapshot) => {
@@ -209,41 +193,68 @@ const ConnectPage = () => {
     });
 
     sendChannel = remoteConnection.createDataChannel('sendDataChannel');
-    remoteConnection.ondatachannel = receiveChannelCallback;
 
-    sendChannel.onopen = onSendChannelStateChange;
-    sendChannel.onclose = onSendChannelStateChange;
+    remoteConnection.ondatachannel = (event:any) => {
+      console.log('Receive Channel Callback');
+      receiveChannel = event.channel;
+      receiveChannel.onmessage = (event: any) => {
+        // RECEIVE REMOTE MESSAGES
+        //console.log('visitor Received Message', event.data);
+        setReceiveData(JSON.parse(event.data))
+      };
+      receiveChannel.onopen = onReceiveChannelStateChange;
+      receiveChannel.onclose = onReceiveChannelStateChange;
+    };
+
+    sendChannel.onopen = () => {
+      const readyState = sendChannel.readyState;
+      console.log('Send channel state is: ' + readyState);
+      setUserType('VISITOR')
+      setStage('PLAY')
+    };
+    sendChannel.onclose = () => {
+      const readyState = sendChannel.readyState;
+      console.log('Send channel state is: ' + readyState);
+      setUserType('NONE')
+      setStage('INIT')
+    };
+
+    setStage('WAIT')
 
   }
 
 
-  const sendData = async () => {
-    const data = {
-      "id": uuidv4(),
-    }
-    sendChannel.send(JSON.stringify(data));
-    console.log('Sent Data: ' + JSON.stringify(data));
+  const sendData = async (payload:{action:string, data:any}) => {
+    sendChannel.readyState === 'open' ? sendChannel.send(JSON.stringify(payload)):null;
   }
 
 
-  console.log('gameCode: ', gameCode)
+  // RENDER -----------------------------------------------
+
+  if (stage === "WAIT") {
+    return (
+      <>
+      <FlexView>
+        <h1>WAIT FOR OTHERS TO CONNECT</h1>
+        <div>Game code: {gameCode}</div>
+        <div>Share the code to other players to join your game</div>
+      </FlexView>
+      </>
+    )
+  }
+
 
   switch (userType) {
 
-    case 'HOST':
+    case 'HOST': case 'VISITOR':
       return (
         <>
-        <button style={{zIndex: 999, top: "20px", position: "absolute"}} onClick={sendData}>Send</button>
-        <Controls gameCode={gameCode} />
+          <Controls sendData={sendData} receiveData={receiveData} gameCode={gameCode} userType={userType} />
         </>
         
       )
       break;
-    case 'VISITOR':
-      return (
-        <Controls gameCode={gameCode} />
-      )
-      break;
+
     case 'NONE': default:
       return (
         <>
@@ -262,19 +273,6 @@ const ConnectPage = () => {
           <input id="game-code" onChange={(e) => (setGameCode(e.target.value))} />
           <button onClick={() => join()}>Join</button>
 
-
-          <div id="sendReceive">
-            <div id="send">
-              <h2>Player Name</h2>
-              <input type="text" id="dataChannelSend"
-                placeholder="Enter your name"></input>
-            </div>
-            <button onClick={sendData}>Send</button>
-            <div id="receive">
-              <h2>Players</h2>
-              <textarea id="dataChannelReceive"></textarea>
-            </div>
-          </div>
         </>
       )
       break;

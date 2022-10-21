@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from 'react'
 
-import Game from '../components/asteroids/game'
+import GameHost from '../components/asteroids/game-host'
+import GameVisitor from '../components/asteroids/game-visitor'
 import { Ikeys, iPlayer } from './asteroids/game.types'
 import KeyHandler from './asteroids/keys'
 
-export const Controls = (props: {gameCode: string}) => {
+interface iProps {
+  userType: 'HOST' | 'VISITOR'
+  gameCode: string,
+  sendData:Function,
+  receiveData: any,
+}
+
+export const Controls = (props: iProps) => {
 
   // Configure multiplayer
 
@@ -24,7 +32,7 @@ export const Controls = (props: {gameCode: string}) => {
   const createPlayer = ():void => {
     setPlayers(prev => [...prev, {
       id: 'abc123',
-      name: 'Jonas',
+      name: 'visitor',
       isHost: true,
       keys,
       score: 0,
@@ -33,13 +41,43 @@ export const Controls = (props: {gameCode: string}) => {
   }
 
   useEffect(() => {
-    createPlayer()
+    //createPlayer()
+    /*
+    props.sendData({
+      id: 'visitor',
+      name: 'visitor',
+      isHost: true,
+      keys,
+      score: 0,
+      lives: 3,
+    })
+    */
   },[])
+
+  useEffect(() => {
+    createPlayer()
+  },[keys])
 
   return (
     <>
       <KeyHandler keys={keys} cb={(keys:Ikeys) => setKeys(keys)} />
-      <Game gameCode={props.gameCode} players={players} />
+      {
+        props.userType === 'HOST' ? (
+          <GameHost
+          receiveData={props.receiveData}
+          sendData={props.sendData}
+          gameCode={props.gameCode}
+          players={players}
+        />          
+        ) : (
+          <GameVisitor
+          receiveData={props.receiveData}
+          sendData={props.sendData}
+          gameCode={props.gameCode}
+          players={players}
+        />
+        )
+      }
     </>
   )
 }

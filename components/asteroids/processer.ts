@@ -10,7 +10,7 @@ export const updateObjects = (targets:CanvasItemGroups, state:IState, ctx: any) 
       if (item.delete) {
         items.splice(index, 1);
       } else{
-        items[index].render(state, ctx);
+        typeof items[index].render === "function" ? items[index].render(state, ctx): null;
       }
       index++;
     }
