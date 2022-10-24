@@ -206,6 +206,13 @@ const ConnectPage = () => {
       receiveChannel.onclose = onReceiveChannelStateChange;
     };
 
+    remoteConnection.ontrack = (e:any) => {
+      console.log('Got some some track')
+      console.log(e.streams[0]);
+      return false
+    }
+
+
     sendChannel.onopen = () => {
       const readyState = sendChannel.readyState;
       console.log('Send channel state is: ' + readyState);
@@ -222,7 +229,6 @@ const ConnectPage = () => {
     setStage('WAIT')
 
   }
-
 
   const sendData = async (payload:{action:string, data:any}) => {
     sendChannel.readyState === 'open' ? sendChannel.send(JSON.stringify(payload)):null;
@@ -249,7 +255,7 @@ const ConnectPage = () => {
     case 'HOST': case 'VISITOR':
       return (
         <>
-          <Controls sendData={sendData} receiveData={receiveData} gameCode={gameCode} userType={userType} />
+          <Controls localConnection={localConnection} remoteConnection={remoteConnection} sendData={sendData} receiveData={receiveData} gameCode={gameCode} userType={userType} />
         </>
         
       )

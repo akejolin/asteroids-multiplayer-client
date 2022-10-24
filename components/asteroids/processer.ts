@@ -1,23 +1,37 @@
 import type { IState, CanvasItem, CanvasItemGroups, collisionObject } from './game.types'
 
 export const updateObjects = (targets:CanvasItemGroups, state:IState, ctx: any) => new Promise<void>((resolve, reject) => {
-
   let index = 0;
   for (let key in targets) {
     index = 0;
     const items = targets[key];
     for (let item of items) {
       if (item.delete) {
-        items.splice(index, 1);
+        typeof items ? items.splice(index, 1): null;
       } else{
-        typeof items[index].render === "function" ? items[index].render(state, ctx): null;
+        
+        typeof items[index].render === "function" ? items[index].render(state, ctx): console.log('no renderfunction');
       }
       index++;
     }
   }
   resolve()
-
 })
+
+export const fakeUpdateObjects = (targets:CanvasItemGroups, state:IState, ctx: any) => new Promise<void>((resolve, reject) => {
+  let index = 0;
+  for (let key in targets) {
+    index = 0;
+    const items = targets[key];
+    for (let item of items) {
+        typeof items[index].render === "function" ? items[index].render(state, ctx): console.log('no renderfunction');
+      index++;
+    }
+  }
+  resolve()
+})
+  
+  
 
 export const RectCircleColliding:Function = (rect:any, circle:any):boolean => {
   const distX = Math.abs(circle.position.x - rect.position.x-rect.w/2);

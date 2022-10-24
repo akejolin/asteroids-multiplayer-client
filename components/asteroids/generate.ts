@@ -1,4 +1,5 @@
 import Asteroid from './Asteroid'
+import AsteroidCopy from './AsteroidCopy'
 import Ship from './Ship'
 import Star from './star'
 import {randomNumBetweenExcluding} from './helpers'
@@ -32,12 +33,38 @@ export const generateAsteroids = (that:any, amount:number) => {
           y: randomNumBetweenExcluding(0, that.state.screen.height, ship.position.y - 180, ship.position.y + 180)
         },
         create: that.createObject,
-        addScore: that.addScore.bind(that),
-        onSound: that.onSound.bind(that),
+        addScore: that.addScore.bind(that) ? that.addScore.bind(that) : () => {},
+        onSound: that.onSound.bind(that) ? that.onSound.bind(that) : () => {},
       });
       that.createObject(asteroid, 'asteroids');
     }
   }
+  export const copyAsteroids = (that:any, origin: any) => {
+      return new AsteroidCopy({
+        position: origin.position,
+        velocity: origin.velocity,
+        rotationSpeed: origin.rotationSpeed,
+        size: origin.size,
+        create: that.createObject,
+        onSound: that.onSound.bind(that) ? that.onSound.bind(that) : () => {},
+        that,
+        vertices: origin.vertices,
+        id: origin.id,
+      });
+  }
+  export const copyShips = (that:any, origin: any) => {
+    return new AsteroidCopy({
+      position: origin.position,
+      velocity: origin.velocity,
+      rotationSpeed: origin.rotationSpeed,
+      size: origin.size,
+      create: that.createObject,
+      onSound: that.onSound.bind(that) ? that.onSound.bind(that) : () => {},
+      that,
+      vertices: origin.vertices,
+      id: origin.id,
+    });
+}
 
 
   export const createShip = (that:any, player:any) => {

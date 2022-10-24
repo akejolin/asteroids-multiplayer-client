@@ -118,6 +118,7 @@ export default class Asteroid {
   }
 
   render(state:IState, ctx:any):void {
+
     // Move
     this.position.x += this.velocity.x;
     this.position.y += this.velocity.y;
@@ -146,6 +147,7 @@ export default class Asteroid {
     // Draw
     const context = ctx //state.context;
     if (context) {
+      console.log('We have context')
       context.save();
       context.translate(this.position.x, this.position.y);
       context.rotate(this.rotation * Math.PI / 180);

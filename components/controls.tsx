@@ -10,6 +10,8 @@ interface iProps {
   gameCode: string,
   sendData:Function,
   receiveData: any,
+  remoteConnection:any,
+  localConnection:any
 }
 
 export const Controls = (props: iProps) => {
@@ -68,6 +70,8 @@ export const Controls = (props: iProps) => {
           sendData={props.sendData}
           gameCode={props.gameCode}
           players={players}
+          remoteConnection={props.remoteConnection}
+          localConnection={props.localConnection}
         />          
         ) : (
           <GameVisitor
@@ -75,6 +79,8 @@ export const Controls = (props: iProps) => {
           sendData={props.sendData}
           gameCode={props.gameCode}
           players={players}
+          remoteConnection={props.remoteConnection}
+          localConnection={props.localConnection}
         />
         )
       }

@@ -37,6 +37,8 @@ interface IProps {
   gameCode: string,
   receiveData: any,
   sendData: Function,
+  remoteConnection:any,
+  localConnection:any,
 }
 
   // Upgrades actions
@@ -318,9 +320,16 @@ export class Game extends Component<IProps> {
 
     context.restore();
 
+    /*
     this.props.sendData({
       action: 'canvasItemsGroupsSync',
       data: this.canvasItemsGroups,
+    })
+    */
+
+    this.props.sendData({
+      action: 'syncAsteroids',
+      data: this.canvasItemsGroups.asteroids,
     })
 
 

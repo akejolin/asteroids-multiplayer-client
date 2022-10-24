@@ -34,7 +34,7 @@ interface IProps {
   receiveData: any,
   sendData: Function,
   remoteConnection:any,
-  localConnection:any,
+  localConnection:any
 }
 
   // Upgrades actions
@@ -50,11 +50,13 @@ export class Game extends Component<IProps> {
   ctx: any;
   players: iPlayer[];
   gameCode: string;
+  video;
   
   constructor(props:IProps) {
     super(props);
     this.gameCode = props.gameCode;
     this.canvasRef = React.createRef<HTMLCanvasElement>();
+    this.video = React.createRef<HTMLVideoElement>();
     this.canvasItems = []
     this.canvasItemsGroups = {
       asteroids: [],
@@ -85,9 +87,26 @@ export class Game extends Component<IProps> {
     if (this.canvasRef.current !== null) {
       const context = this.canvasRef.current!.getContext('2d');
       this.ctx = context
-
-      this.update()
     }
+
+    if (this.video.current !== null) {
+      const video = this.video.current
+
+      console.log('componentDidMount : this.props.remoteConnection: ', this.props.remoteConnection)
+      this.props.remoteConnection.ontrack = (e:any) => {
+        console.log('Got some some track')
+        video.srcObject = e.streams[0];
+        return false
+      }
+
+
+
+
+      this.video.current.addEventListener('loadedmetadata', function() {
+
+      });
+    }
+    
   }
 
   componentWillUnmount():void {
@@ -107,11 +126,10 @@ export class Game extends Component<IProps> {
         })
       break;
       case 'syncContext':
-        this.setState({context: payload.data});
-        if (this.canvasRef.current !== null) {
-          const context = this.canvasRef.current!.getContext('2d');
-          this.ctx = context
-        }
+        //this.setState({context: payload.data});
+          
+          this.ctx.drawImage(payload.data, 0, 0);
+        
       break;
 
       case 'gameStatus':
@@ -121,25 +139,18 @@ export class Game extends Component<IProps> {
       case 'syncAsteroids':
         
         //this.canvasItemsGroups.asteroids = payload.data
-
-        
-        //const data = payload.data
-        
-        const output:any = [] 
         
         
-        //this.canvasItemsGroups.asteroids = []
+        this.canvasItemsGroups.asteroids = []
         payload.data.forEach((element:any) => {
           const item:any = copyAsteroids(this, element)
-          output.push(item);
+          this.createObject(item, 'asteroids');
         });
-        this.canvasItemsGroups.asteroids = output
-        this.update()
         
         
         //this.canvasItemsGroups.asteroids = payload.data
         //copyAsteroids(this, 3, element)
-        
+        //this.update();
 
       case 'canvasItemsGroupsSync':
       //this.canvasItemsGroups = payload.data
@@ -228,19 +239,6 @@ export class Game extends Component<IProps> {
 
     await updateObjects(this.canvasItemsGroups, this.state, this.ctx)
     context.restore();
-
-
-    // Engine
-    /*
-      if (this.fps !== 60) {
-        setTimeout(() => {
-          requestAnimationFrame(() => this.update());
-        }, 1000 / this.fps);
-      } else {
-        requestAnimationFrame(() => this.update());
-      }
-      */
-
     }
 
   }
@@ -248,6 +246,7 @@ export class Game extends Component<IProps> {
   
 
   render() {
+    console.log('this.canvasItemsGroups: ', this.canvasItemsGroups)
     const {screen} = this.state
 
     return (
@@ -266,22 +265,18 @@ export class Game extends Component<IProps> {
         <TextFlasher allowedStatus={['GAME_LEVEL_UP']} text={`LEVEL UP`} gameStatus={this.state.gameStatus} colorThemeIndex={this.state.colorThemeIndex} />
 
         <div style={{zIndex: 100, position: "absolute"}}>Visiting game: {this.gameCode}</div>
-        <canvas
-            id="canvas-board"
-            ref={this.canvasRef}
-            style={{
-              display: 'block',
-              backgroundColor: themes[this.state.colorThemeIndex].background,
-              top: 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              width: '100%',
-              height: '100%',
-            }}
-            width={screen.width * screen.ratio}
-            height={screen.height * screen.ratio}
-          />
+        <video 
+          style={{
+            display: 'block',
+            backgroundColor: 'green',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            width: screen.width,
+            height: screen.height,
+          }}
+          ref={this.video} playsInline autoPlay muted></video>
       </>
     )
   }
