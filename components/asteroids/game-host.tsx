@@ -49,7 +49,6 @@ export class Game extends Component<IProps> {
   state: IState;
   canvasItems: CanvasItem[];
   canvasItemsGroups: CanvasItemGroups;
-  particles: CanvasItem[];
   fps = 60;
   ctx: any;
   players: iPlayer[];
@@ -68,7 +67,6 @@ export class Game extends Component<IProps> {
       stars: []
     }
 
-    this.particles = []
     this.state = {
       gameStatus: 'START_UP',
       screen: {
@@ -320,16 +318,14 @@ export class Game extends Component<IProps> {
 
     context.restore();
 
-    /*
     this.props.sendData({
-      action: 'canvasItemsGroupsSync',
-      data: this.canvasItemsGroups,
-    })
-    */
-
-    this.props.sendData({
-      action: 'syncAsteroids',
-      data: this.canvasItemsGroups.asteroids,
+      action: 'syncItems',
+      data: {
+        asteroids: this.canvasItemsGroups.asteroids,
+        ships: this.canvasItemsGroups.ships,
+        particles: this.canvasItemsGroups.particles,
+        bullets: this.canvasItemsGroups.bullets,
+      }
     })
 
 

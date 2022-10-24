@@ -12,7 +12,9 @@ import {
 import {
   generateStars,
   copyAsteroids,
-  generateAsteroids
+  copyShips,
+  copyParticles,
+  copyBullets,
 } from './generate'
 import BoardInit from './boardInit'
 import TextFlasher from './text-flasher'
@@ -118,23 +120,40 @@ export class Game extends Component<IProps> {
         this.setState({gameStatus: `${payload.data}`})
       break;
 
-      case 'syncAsteroids':
+      case 'syncItems':
         
-        //this.canvasItemsGroups.asteroids = payload.data
-
-        
-        //const data = payload.data
-        
-        const output:any = [] 
-        
-        
-        //this.canvasItemsGroups.asteroids = []
-        payload.data.forEach((element:any) => {
+        const asteroids:any = [] 
+        payload.data.asteroids.forEach((element:any) => {
           const item:any = copyAsteroids(this, element)
-          output.push(item);
+          asteroids.push(item);
         });
-        this.canvasItemsGroups.asteroids = output
+        this.canvasItemsGroups.asteroids = asteroids
+
+        const ships:any = [] 
+        payload.data.ships.forEach((element:any) => {
+          const item:any = copyShips(this, element)
+          ships.push(item);
+        });
+        this.canvasItemsGroups.ships = ships
+
+        const particles:any = [] 
+        payload.data.particles.forEach((element:any) => {
+          const item:any = copyParticles(this, element)
+          particles.push(item);
+        });
+        this.canvasItemsGroups.particles = particles
+
+        const bullets:any = [] 
+        payload.data.bullets.forEach((element:any) => {
+          const item:any = copyBullets(this, element)
+          bullets.push(item);
+        });
+        this.canvasItemsGroups.bullets = bullets
+
+
+        // run update for all items
         this.update()
+
         
         
         //this.canvasItemsGroups.asteroids = payload.data

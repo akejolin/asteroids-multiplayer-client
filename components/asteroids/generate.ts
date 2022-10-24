@@ -1,7 +1,10 @@
 import Asteroid from './Asteroid'
 import AsteroidCopy from './AsteroidCopy'
 import Ship from './Ship'
+import ShipCopy from './ShipCopy'
 import Star from './star'
+import ParticleCopy from './ParticleCopy'
+import BulletCopy from './BulletCopy'
 import {randomNumBetweenExcluding} from './helpers'
 import type {
     CanvasItem,
@@ -44,6 +47,7 @@ export const generateAsteroids = (that:any, amount:number) => {
         position: origin.position,
         velocity: origin.velocity,
         rotationSpeed: origin.rotationSpeed,
+        rotation: origin.rotation,
         size: origin.size,
         create: that.createObject,
         onSound: that.onSound.bind(that) ? that.onSound.bind(that) : () => {},
@@ -53,18 +57,43 @@ export const generateAsteroids = (that:any, amount:number) => {
       });
   }
   export const copyShips = (that:any, origin: any) => {
-    return new AsteroidCopy({
+    return new ShipCopy({
+      type: origin.type,
       position: origin.position,
       velocity: origin.velocity,
+      radius: origin.radius,
+      rotation: origin.rotation,
       rotationSpeed: origin.rotationSpeed,
-      size: origin.size,
-      create: that.createObject,
-      onSound: that.onSound.bind(that) ? that.onSound.bind(that) : () => {},
-      that,
-      vertices: origin.vertices,
+      speed: origin.speed,
+      inertia: origin.inertia,
+      imgShip: origin.imgShip,
+      player: origin.player,
       id: origin.id,
     });
-}
+  }
+  export const copyParticles = (that:any, origin: any) => {
+
+    return new ParticleCopy({
+      position: origin.position,
+      velocity: origin.velocity,
+      lifeSpan: origin.lifeSpan,
+      size: origin.size,
+      inertia: origin.inertia,
+      radius: origin.radius,
+    });
+  }
+
+  export const copyBullets = (that:any, origin: any) => {
+    return new BulletCopy({
+      position: origin.position,
+      velocity: origin.velocity,
+      size: origin.size,
+      color: origin.color,
+      lifeSpan: origin.lifeSpan,
+      rotation: origin.rotation,
+      radius: origin.radius,
+    });
+  }
 
 
   export const createShip = (that:any, player:any) => {
